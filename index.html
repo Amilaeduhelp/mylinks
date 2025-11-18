@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amila Udawatta - Link Manager</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2e9 100%);
+            min-height: 100vh;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            width: 100%;
+            flex: 1;
+        }
+
+        header {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 25px 20px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .add-section {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .add-section h2 {
+            color: #059669;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        label {
+            display: block;
+            color: #374151;
+            font-size: 14px;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #d1fae5;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #10b981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+
+        .btn-add {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: transform 0.2s;
+        }
+
+        .btn-add:active {
+            transform: scale(0.98);
+        }
+
+        .actions {
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .btn-action {
+            flex: 1;
+            padding: 10px;
+            background: #10b981;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-action:hover {
+            background: #059669;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .category-section {
+            margin-bottom: 20px;
+        }
+
+        .category-title {
+            background: white;
+            padding: 12px 15px;
+            border-radius: 8px;
+            color: #059669;
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .category-title::before {
+            content: "📁";
+            margin-right: 8px;
+            font-size: 18px;
+        }
+
+        .links-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 10px;
+        }
+
+        .link-button {
+            background: white;
+            border: 2px solid #d1fae5;
+            border-radius: 10px;
+            padding: 15px 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .link-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+            border-color: #10b981;
+        }
+
+        .link-name {
+            color: #1f2937;
+            font-size: 14px;
+            font-weight: 500;
+            word-wrap: break-word;
+        }
+
+        .delete-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #ef4444;
+            color: white;
+            border: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+
+        .delete-btn:hover {
+            opacity: 1;
+        }
+
+        .empty-message {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            color: #6b7280;
+            font-style: italic;
+        }
+
+        footer {
+            background: white;
+            padding: 15px;
+            text-align: center;
+            border-radius: 10px;
+            margin-top: 20px;
+            color: #6b7280;
+            font-size: 14px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        @media (max-width: 480px) {
+            .links-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            }
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            max-width: 90%;
+            max-height: 80%;
+            overflow: auto;
+        }
+
+        .modal-content textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 10px;
+            border: 2px solid #d1fae5;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .modal-buttons button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔗 Amila Udawatta</h1>
+        </header>
+
+        <div class="add-section">
+            <h2>නව Link එකතු කරන්න</h2>
+            <div class="form-group">
+                <label>නම</label>
+                <input type="text" id="linkName" placeholder="උදා: Google">
+            </div>
+            <div class="form-group">
+                <label>Link URL</label>
+                <input type="url" id="linkUrl" placeholder="https://example.com">
+            </div>
+            <div class="form-group">
+                <label>කාණ්ඩය</label>
+                <select id="linkCategory">
+                    <option value="Education">Education</option>
+                    <option value="Private">Private</option>
+                    <option value="Social Media">Social Media</option>
+                    <option value="Economy">Economy</option>
+                    <option value="Technology">Technology</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <button class="btn-add" onclick="addLink()">එකතු කරන්න</button>
+        </div>
+
+        <div class="actions">
+            <button class="btn-action" onclick="exportLinks()">📤 Export</button>
+            <button class="btn-action" onclick="showImportModal()">📥 Import</button>
+            <button class="btn-action btn-danger" onclick="clearAllLinks()">🗑️ Clear All</button>
+        </div>
+
+        <div id="linksContainer"></div>
+    </div>
+
+    <footer>
+        © Copyright - Amila Udawatta
+    </footer>
+
+    <div id="importModal" class="modal">
+        <div class="modal-content">
+            <h2 style="color: #059669; margin-bottom: 15px;">Links Import කරන්න</h2>
+            <textarea id="importData" placeholder="Export කළ JSON data මෙහි paste කරන්න..."></textarea>
+            <div class="modal-buttons">
+                <button style="background: #10b981; color: white;" onclick="importLinks()">Import කරන්න</button>
+                <button style="background: #6b7280; color: white;" onclick="closeModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const STORAGE_KEY = 'amila_links';
+        const categories = ['Education', 'Private', 'Social Media', 'Economy', 'Technology', 'Other'];
+
+        function getLinks() {
+            const data = localStorage.getItem(STORAGE_KEY);
+            return data ? JSON.parse(data) : [];
+        }
+
+        function saveLinks(links) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(links));
+        }
+
+        function loadLinks() {
+            const container = document.getElementById('linksContainer');
+            container.innerHTML = '';
+
+            const links = getLinks();
+
+            if (links.length === 0) {
+                container.innerHTML = '<div class="empty-message">තවම links එකතු කර නැත. ඉහළින් ඔබේ පළමු link එක එකතු කරන්න!</div>';
+                return;
+            }
+
+            const linksByCategory = {};
+            links.forEach(link => {
+                if (!linksByCategory[link.category]) {
+                    linksByCategory[link.category] = [];
+                }
+                linksByCategory[link.category].push(link);
+            });
+
+            categories.forEach(category => {
+                if (linksByCategory[category] && linksByCategory[category].length > 0) {
+                    const section = document.createElement('div');
+                    section.className = 'category-section';
+                    
+                    const title = document.createElement('div');
+                    title.className = 'category-title';
+                    title.textContent = category;
+                    
+                    const grid = document.createElement('div');
+                    grid.className = 'links-grid';
+                    
+                    linksByCategory[category].forEach((link, index) => {
+                        const button = document.createElement('div');
+                        button.className = 'link-button';
+                        button.onclick = () => window.open(link.url, '_blank');
+                        
+                        const deleteBtn = document.createElement('button');
+                        deleteBtn.className = 'delete-btn';
+                        deleteBtn.textContent = '×';
+                        deleteBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            deleteLink(link.id);
+                        };
+                        
+                        const name = document.createElement('div');
+                        name.className = 'link-name';
+                        name.textContent = link.name;
+                        
+                        button.appendChild(deleteBtn);
+                        button.appendChild(name);
+                        grid.appendChild(button);
+                    });
+                    
+                    section.appendChild(title);
+                    section.appendChild(grid);
+                    container.appendChild(section);
+                }
+            });
+        }
+
+        function addLink() {
+            const name = document.getElementById('linkName').value.trim();
+            const url = document.getElementById('linkUrl').value.trim();
+            const category = document.getElementById('linkCategory').value;
+
+            if (!name || !url) {
+                alert('කරුණාකර නම සහ URL යන දෙකම ඇතුළත් කරන්න!');
+                return;
+            }
+
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                alert('කරුණාකර වලංගු URL එකක් ඇතුළත් කරන්න (http:// හෝ https:// සමඟ)');
+                return;
+            }
+
+            const links = getLinks();
+            links.push({
+                id: Date.now(),
+                name: name,
+                url: url,
+                category: category
+            });
+            saveLinks(links);
+
+            document.getElementById('linkName').value = '';
+            document.getElementById('linkUrl').value = '';
+            
+            loadLinks();
+        }
+
+        function deleteLink(id) {
+            if (confirm('මෙම link එක delete කිරීමට අවශ්‍යද?')) {
+                const links = getLinks();
+                const filtered = links.filter(link => link.id !== id);
+                saveLinks(filtered);
+                loadLinks();
+            }
+        }
+
+        function clearAllLinks() {
+            if (confirm('සියලුම links delete කිරීමට අවශ්‍යද? මෙය ආපසු හැරවිය නොහැක!')) {
+                localStorage.removeItem(STORAGE_KEY);
+                loadLinks();
+            }
+        }
+
+        function exportLinks() {
+            const links = getLinks();
+            if (links.length === 0) {
+                alert('Export කිරීමට links නැත!');
+                return;
+            }
+            
+            const dataStr = JSON.stringify(links, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `amila_links_${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function showImportModal() {
+            document.getElementById('importModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('importModal').classList.remove('active');
+            document.getElementById('importData').value = '';
+        }
+
+        function importLinks() {
+            const data = document.getElementById('importData').value.trim();
+            
+            if (!data) {
+                alert('කරුණාකර import කිරීමට data ඇතුළත් කරන්න!');
+                return;
+            }
+
+            try {
+                const importedLinks = JSON.parse(data);
+                
+                if (!Array.isArray(importedLinks)) {
+                    throw new Error('Invalid format');
+                }
+
+                const currentLinks = getLinks();
+                const merged = [...currentLinks, ...importedLinks];
+                saveLinks(merged);
+                
+                closeModal();
+                loadLinks();
+                alert(`සාර්ථකව links ${importedLinks.length}ක් import කරන ලදී!`);
+            } catch (error) {
+                alert('වැරදි data format එකක්! කරුණාකර valid JSON data එකක් ඇතුළත් කරන්න.');
+            }
+        }
+
+        // Enter key support
+        document.getElementById('linkName').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') document.getElementById('linkUrl').focus();
+        });
+        
+        document.getElementById('linkUrl').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addLink();
+        });
+
+        // Load links on page load
+        loadLinks();
+    </script>
+</body>
+</html>
