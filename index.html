@@ -137,6 +137,22 @@
             background: #dc2626;
         }
 
+        .search-box {
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #d1fae5;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
         .category-section {
             margin-bottom: 20px;
         }
@@ -151,6 +167,7 @@
             margin-bottom: 10px;
             display: flex;
             align-items: center;
+            justify-content: space-between;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
         }
 
@@ -158,6 +175,15 @@
             content: "📁";
             margin-right: 8px;
             font-size: 18px;
+        }
+
+        .category-count {
+            background: #d1fae5;
+            color: #059669;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
         }
 
         .links-grid {
@@ -290,6 +316,27 @@
             cursor: pointer;
             font-weight: 600;
         }
+
+        .stats {
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .stats-number {
+            font-size: 32px;
+            font-weight: 700;
+            color: #10b981;
+        }
+
+        .stats-label {
+            color: #6b7280;
+            font-size: 14px;
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
@@ -297,6 +344,11 @@
         <header>
             <h1>🔗 Amila Udawatta</h1>
         </header>
+
+        <div class="stats">
+            <div class="stats-number" id="totalLinks">0</div>
+            <div class="stats-label">Total Links</div>
+        </div>
 
         <div class="add-section">
             <h2>නව Link එකතු කරන්න</h2>
@@ -328,6 +380,10 @@
             <button class="btn-action btn-danger" onclick="clearAllLinks()">🗑️ Clear All</button>
         </div>
 
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="🔍 Links සොයන්න..." oninput="searchLinks()">
+        </div>
+
         <div id="linksContainer"></div>
     </div>
 
@@ -347,26 +403,140 @@
     </div>
 
     <script>
-        const STORAGE_KEY = 'amila_links';
         const categories = ['Education', 'Private', 'Social Media', 'Economy', 'Technology', 'Other'];
 
+        // In-memory storage (වෙනස් කළ කොටස)
+        let linksData = [
+            {id: 1, name: "eduhelp.lk", url: "https://www.eduhelp.lk/index.php/uncategorized/edu/41215/", category: "Education"},
+            {id: 2, name: "Book store", url: "https://amilaeduhelp.github.io/book-price/", category: "Education"},
+            {id: 3, name: "සිතියම් පොත", url: "https://www.eduhelp.lk/index.php/uncategorized/36818/", category: "Education"},
+            {id: 4, name: "edit post", url: "https://www.eduhelp.lk/wp-admin/post.php?post=27019&action=edit&classic-editor", category: "Education"},
+            {id: 5, name: "all post", url: "https://www.eduhelp.lk/wp-admin/edit.php?s&post_status=all&post_type=post&action=-1&m=0&cat=161&post_format&seo_filter&readability_filter&filter_action=Filter&paged=64&action2=-1", category: "Education"},
+            {id: 6, name: "table", url: "https://www.eduhelp.lk/wp-admin/admin.php?page=tablepress", category: "Education"},
+            {id: 7, name: "notification", url: "https://www.eduhelp.lk/wp-admin/post.php?post=41868&action=edit&classic-editor", category: "Education"},
+            {id: 8, name: "Encyclopedia", url: "file:///D:/MY%20BROWSER/encyclopedia/index.html", category: "Education"},
+            {id: 9, name: "eduhelp MCQ creator", url: "file:///D:/MY%20BROWSER/teacher.html", category: "Education"},
+            {id: 10, name: "Currency converter", url: "https://www.google.lk/search?q=currency+converter", category: "Economy"},
+            {id: 11, name: "eduhelp-youtube", url: "https://www.youtube.com/@eduhelp-.3651/videos", category: "Social Media"},
+            {id: 12, name: "youtube", url: "https://www.youtube.com/", category: "Social Media"},
+            {id: 13, name: "Translate to English", url: "https://www.google.com/search?q=google+translate", category: "Technology"},
+            {id: 14, name: "calendar", url: "https://calendar.google.com/calendar/u/0/r/day", category: "Private"},
+            {id: 15, name: "google doc", url: "https://docs.google.com/forms/d/19mUwxEO9a0Es9vg", category: "Private"},
+            {id: 16, name: "map", url: "https://www.google.com/maps/@6.8921907,80.0646674,13z", category: "Other"},
+            {id: 17, name: "Google meet", url: "https://meet.google.com/landing", category: "Technology"},
+            {id: 18, name: "payoneer", url: "https://login.payoneer.com/?sessionDataKey=", category: "Economy"},
+            {id: 19, name: "patreon", url: "https://www.patreon.com/user/membership?u=118179437", category: "Economy"},
+            {id: 20, name: "SLT bill", url: "https://myslt.slt.lk/boardBand/summary", category: "Economy"},
+            {id: 21, name: "eduhelplibrary", url: "https://mail.google.com/mail/u/4/#inbox", category: "Private"},
+            {id: 22, name: "amila.udavatta", url: "https://mail.google.com/mail/u/0/#inbox", category: "Private"},
+            {id: 23, name: "urc.eduhelp", url: "https://mail.google.com/mail/u/3/#inbox", category: "Private"},
+            {id: 24, name: "amilaudawattha", url: "https://mail.google.com/mail/u/2/#sent", category: "Private"},
+            {id: 25, name: "udawatthaamila", url: "https://mail.google.com/mail/u/1/#inbox", category: "Private"},
+            {id: 26, name: "udavattaamila", url: "https://mail.google.com/mail/u/5/#inbox", category: "Private"},
+            {id: 27, name: "Ink bottle order", url: "https://mmsrilanka.com/index.php?route=common/home", category: "Economy"},
+            {id: 28, name: "අමිල උඩවත්ත ඉතිහාසය-1", url: "https://www.facebook.com/Udavatta/", category: "Social Media"},
+            {id: 29, name: "අමිල උඩවත්ත ඉතිහාසය-2", url: "https://www.facebook.com/profile.php?id=100077511501255", category: "Social Media"},
+            {id: 30, name: "graphic asvenna", url: "https://www.facebook.com/graphic.asvenna", category: "Social Media"},
+            {id: 31, name: "whatsapp", url: "https://web.whatsapp.com/", category: "Social Media"},
+            {id: 32, name: "instagram", url: "https://www.instagram.com/", category: "Social Media"},
+            {id: 33, name: "x (twitter)", url: "https://x.com/", category: "Social Media"},
+            {id: 34, name: "Bg Remover", url: "https://www.remove.bg/upload", category: "Technology"},
+            {id: 35, name: "Image Enhancer", url: "https://www.cutout.pro/photo-enhancer-sharpener-upscaler/upload", category: "Technology"},
+            {id: 36, name: "freepik", url: "https://www.freepik.com/search?query=kids", category: "Technology"},
+            {id: 37, name: "Image bazzar", url: "https://www.imagesbazaar.com/", category: "Technology"},
+            {id: 38, name: "canva", url: "https://www.canva.com/", category: "Technology"},
+            {id: 39, name: "pngmart", url: "https://www.pngmart.com/", category: "Technology"},
+            {id: 40, name: "pinterest", url: "https://www.pinterest.com/", category: "Social Media"},
+            {id: 41, name: "Free Ai Image Generator", url: "https://perchance.org/72t4ylrqdy", category: "Technology"},
+            {id: 42, name: "magicstudio.com", url: "https://magicstudio.com/ai-art-generator/", category: "Technology"},
+            {id: 43, name: "perchance", url: "https://perchance.org/ai-text-to-image-generator", category: "Technology"},
+            {id: 44, name: "piclumen", url: "https://piclumen.com/app/image-generator/gallery", category: "Technology"},
+            {id: 45, name: "aiease", url: "https://www.aiease.ai/app/generate-images/", category: "Technology"},
+            {id: 46, name: "stabledifffusion", url: "https://stabledifffusion.com/tools/ai-image-generator", category: "Technology"},
+            {id: 47, name: "ignca", url: "https://ignca.gov.in/divisionss/asi-books/", category: "Education"},
+            {id: 48, name: "සුබස-වියරණය", url: "https://speller.subasa.lk/", category: "Education"},
+            {id: 49, name: "PDF SUMMARY", url: "https://notegpt.io/", category: "Technology"},
+            {id: 50, name: "වහර-කෝෂය", url: "http://crawler.nlpc.uom.lk/", category: "Education"},
+            {id: 51, name: "ISBN Sri Lanka", url: "https://isbn.lk/index.php/welcome/logout", category: "Education"},
+            {id: 52, name: "මධුර Online", url: "https://www.maduraonline.com/", category: "Education"},
+            {id: 53, name: "Oxford Online", url: "https://www.oxfordlearnersdictionaries.com/", category: "Education"},
+            {id: 54, name: "OCR", url: "https://www.newocr.com/", category: "Technology"},
+            {id: 55, name: "අරුත.lk", url: "https://arutha.lk/", category: "Education"},
+            {id: 56, name: "ලංකා සෙල්ලිපි", url: "https://www.inscriptions.lk/", category: "Education"},
+            {id: 57, name: "කලා සඟරාව", url: "https://www.artscouncil.lk/kala-magazine-archives/", category: "Education"},
+            {id: 58, name: "පැරණි ස්ථාන", url: "https://ancientlocations.net/Default.aspx?p=m", category: "Education"},
+            {id: 59, name: "Archaeology map", url: "https://archaeologysl.maps.arcgis.com/", category: "Education"},
+            {id: 60, name: "ඇමරිකානු ඩිජිටල් පුස්තකාල", url: "https://archive.org/details/americana", category: "Education"},
+            {id: 61, name: "MS word Online", url: "https://m365.cloud.microsoft/", category: "Technology"},
+            {id: 62, name: "ත්‍රිපිටක", url: "https://tipitaka.lk/", category: "Education"},
+            {id: 63, name: "රජරට UNI", url: "http://repository.rjt.ac.lk/", category: "Education"},
+            {id: 64, name: "බෞද්ධ පොත්", url: "https://namobuddhassa.wordpress.com/", category: "Education"},
+            {id: 65, name: "Pastpapers wiki", url: "https://pastpapers.wiki/", category: "Education"},
+            {id: 66, name: "Indian Historical Book", url: "https://sanskritdocuments.org/scannedbooks/asiallpdfs.html", category: "Education"},
+            {id: 67, name: "Indian archaeological review", url: "https://asi.nic.in/pages/Publications/indianArchaelogyReports", category: "Education"},
+            {id: 68, name: "Lanka NEWS Papers", url: "https://www.w3newspapers.com/srilanka/", category: "Education"},
+            {id: 69, name: "Encyclopedia of ART", url: "https://mapacademy.io/encyclopedia-of-art/", category: "Education"},
+            {id: 70, name: "සිංහල ශබ්දකෝෂය", url: "http://www.dictionary.gov.lk/", category: "Education"},
+            {id: 71, name: "සිංහල විෂ්වකෝෂය", url: "http://encyclopedia.gov.lk/", category: "Education"},
+            {id: 72, name: "daisy-library", url: "https://daisylanka.org/the-daisy-library/allbooks/", category: "Education"},
+            {id: 73, name: "IMD", url: "https://mausam.imd.gov.in/", category: "Other"},
+            {id: 74, name: "Pinterest video download", url: "https://klickpin.com/download", category: "Technology"},
+            {id: 75, name: "Zoom earth", url: "https://zoom.earth/maps/satellite-hd/", category: "Other"},
+            {id: 76, name: "MIT app creator", url: "https://appinventor.mit.edu/", category: "Technology"},
+            {id: 77, name: "YTS", url: "https://yts.mx/", category: "Other"},
+            {id: 78, name: "save from net", url: "https://en1.savefrom.net/", category: "Technology"},
+            {id: 79, name: "Mind Luster course", url: "https://www.mindluster.com/", category: "Education"},
+            {id: 80, name: "voice typing", url: "https://kdj.lk/singlish", category: "Technology"},
+            {id: 81, name: "w3 School", url: "https://www.w3schools.com/", category: "Technology"},
+            {id: 82, name: "Wix", url: "https://www.wix.com/", category: "Technology"},
+            {id: 83, name: "squarespace", url: "https://www.squarespace.com/", category: "Technology"},
+            {id: 84, name: "weebly", url: "https://www.weebly.com/", category: "Technology"},
+            {id: 85, name: "wordpress", url: "https://wordpress.com/", category: "Technology"},
+            {id: 86, name: "web to app", url: "https://www.webintoapp.com/author/dashboard/", category: "Technology"},
+            {id: 87, name: "appsgeyser", url: "https://appsgeyser.com/appmaker/", category: "Technology"},
+            {id: 88, name: "code pen", url: "https://codepen.io/", category: "Technology"},
+            {id: 89, name: "github", url: "https://github.com/Amilaeduhelp", category: "Technology"},
+            {id: 90, name: "supabase", url: "https://supabase.com/dashboard", category: "Technology"},
+            {id: 91, name: "app diagrams", url: "https://app.diagrams.net/?src=about", category: "Technology"},
+            {id: 92, name: "LearnX", url: "https://amilaeduhelp.github.io/-2025/", category: "Education"},
+            {id: 93, name: "Xenon", url: "https://admin.wst.lk/#/login", category: "Private"},
+            {id: 94, name: "Lankadeepa", url: "https://www.lankadeepa.lk/latest-news/1", category: "Other"},
+            {id: 95, name: "Helakuru එසැණ", url: "https://www.helakuru.lk/esana/news/105191", category: "Other"},
+            {id: 96, name: "BBC", url: "https://www.youtube.com/@BBCNews/streams", category: "Other"},
+            {id: 97, name: "+INFO", url: "https://www.1plusinfo.lk/2024/09/7923.html", category: "Other"},
+            {id: 98, name: "Gazettes", url: "https://documents.gov.lk/view/gazettes/2025.html", category: "Other"},
+            {id: 99, name: "Radio garden", url: "https://radio.garden/favorites", category: "Other"},
+            {id: 100, name: "TV garden", url: "https://tv.garden/lk", category: "Other"}
+        ];
+
         function getLinks() {
-            const data = localStorage.getItem(STORAGE_KEY);
-            return data ? JSON.parse(data) : [];
+            return linksData;
         }
 
         function saveLinks(links) {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(links));
+            linksData = links;
+            updateStats();
         }
 
-        function loadLinks() {
+        function updateStats() {
+            document.getElementById('totalLinks').textContent = linksData.length;
+        }
+
+        function loadLinks(searchTerm = '') {
             const container = document.getElementById('linksContainer');
             container.innerHTML = '';
 
-            const links = getLinks();
+            let links = getLinks();
+            
+            if (searchTerm) {
+                links = links.filter(link => 
+                    link.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    link.url.toLowerCase().includes(searchTerm.toLowerCase())
+                );
+            }
 
             if (links.length === 0) {
-                container.innerHTML = '<div class="empty-message">තවම links එකතු කර නැත. ඉහළින් ඔබේ පළමු link එක එකතු කරන්න!</div>';
+                container.innerHTML = '<div class="empty-message">සොයන්නට links හමු නොවුනි!</div>';
                 return;
             }
 
@@ -385,12 +555,12 @@
                     
                     const title = document.createElement('div');
                     title.className = 'category-title';
-                    title.textContent = category;
+                    title.innerHTML = `${category} <span class="category-count">${linksByCategory[category].length}</span>`;
                     
                     const grid = document.createElement('div');
                     grid.className = 'links-grid';
                     
-                    linksByCategory[category].forEach((link, index) => {
+                    linksByCategory[category].forEach((link) => {
                         const button = document.createElement('div');
                         button.className = 'link-button';
                         button.onclick = () => window.open(link.url, '_blank');
@@ -425,61 +595,49 @@
             const category = document.getElementById('linkCategory').value;
 
             if (!name || !url) {
-                alert('කරුණාකර නම සහ URL යන දෙකම ඇතුළත් කරන්න!');
-                return;
-            }
-
-            if (!url.startsWith('http://') && !url.startsWith('https://')) {
-                alert('කරුණාකර වලංගු URL එකක් ඇතුළත් කරන්න (http:// හෝ https:// සමඟ)');
+                alert('කරුණාකර නම සහ URL පුරවන්න!');
                 return;
             }
 
             const links = getLinks();
-            links.push({
+            const newLink = {
                 id: Date.now(),
                 name: name,
                 url: url,
                 category: category
-            });
+            };
+
+            links.push(newLink);
             saveLinks(links);
+            loadLinks();
 
             document.getElementById('linkName').value = '';
             document.getElementById('linkUrl').value = '';
-            
-            loadLinks();
         }
 
         function deleteLink(id) {
-            if (confirm('මෙම link එක delete කිරීමට අවශ්‍යද?')) {
-                const links = getLinks();
-                const filtered = links.filter(link => link.id !== id);
-                saveLinks(filtered);
+            if (confirm('මෙම link එක මකන්න ඔබට වුවමනාද?')) {
+                let links = getLinks();
+                links = links.filter(link => link.id !== id);
+                saveLinks(links);
                 loadLinks();
             }
         }
 
-        function clearAllLinks() {
-            if (confirm('සියලුම links delete කිරීමට අවශ්‍යද? මෙය ආපසු හැරවිය නොහැක!')) {
-                localStorage.removeItem(STORAGE_KEY);
-                loadLinks();
-            }
+        function searchLinks() {
+            const searchTerm = document.getElementById('searchInput').value;
+            loadLinks(searchTerm);
         }
 
         function exportLinks() {
             const links = getLinks();
-            if (links.length === 0) {
-                alert('Export කිරීමට links නැත!');
-                return;
-            }
-            
             const dataStr = JSON.stringify(links, null, 2);
-            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
             const url = URL.createObjectURL(dataBlob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = `amila_links_${new Date().toISOString().split('T')[0]}.json`;
+            link.download = 'amila_links_backup.json';
             link.click();
-            URL.revokeObjectURL(url);
         }
 
         function showImportModal() {
@@ -495,40 +653,40 @@
             const data = document.getElementById('importData').value.trim();
             
             if (!data) {
-                alert('කරුණාකර import කිරීමට data ඇතුළත් කරන්න!');
+                alert('කරුණාකර data paste කරන්න!');
                 return;
             }
 
             try {
                 const importedLinks = JSON.parse(data);
-                
-                if (!Array.isArray(importedLinks)) {
-                    throw new Error('Invalid format');
+                if (Array.isArray(importedLinks)) {
+                    saveLinks(importedLinks);
+                    loadLinks();
+                    closeModal();
+                    alert('Links සාර්ථකව import විය!');
+                } else {
+                    alert('වලංගු නොවන data format!');
                 }
-
-                const currentLinks = getLinks();
-                const merged = [...currentLinks, ...importedLinks];
-                saveLinks(merged);
-                
-                closeModal();
-                loadLinks();
-                alert(`සාර්ථකව links ${importedLinks.length}ක් import කරන ලදී!`);
             } catch (error) {
-                alert('වැරදි data format එකක්! කරුණාකර valid JSON data එකක් ඇතුළත් කරන්න.');
+                alert('Error: වලංගු JSON format නොවේ!');
             }
         }
 
-        // Enter key support
-        document.getElementById('linkName').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') document.getElementById('linkUrl').focus();
-        });
-        
-        document.getElementById('linkUrl').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') addLink();
-        });
+        function clearAllLinks() {
+            if (confirm('සියලු links මකා දමන්නද? මෙම ක්‍රියාව ආපසු හැරවිය නොහැක!')) {
+                if (confirm('ඔබට සැබවින්ම විශ්වාසද?')) {
+                    linksData = [];
+                    loadLinks();
+                    alert('සියලු links මකා දමන ලදි!');
+                }
+            }
+        }
 
-        // Load links on page load
-        loadLinks();
+        // Initialize on page load
+        window.onload = function() {
+            updateStats();
+            loadLinks();
+        };
     </script>
 </body>
 </html>
